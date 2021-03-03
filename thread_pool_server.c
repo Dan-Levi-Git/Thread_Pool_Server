@@ -58,7 +58,7 @@ void *handle_connction (int *p_client)
     fp = fopen("test1.txt", "r");
     fread(buffer, sizeof(char), sizeof(buffer), fp);
     write(client_psocket, buffer, 256);
-    printf("file is send \n");
+    printf("File send successfuly \n");
     fclose(fp);
     while(1)
     {
@@ -157,3 +157,4 @@ int main(int argc, char *argv[])
 
     return 0;
 }
+
