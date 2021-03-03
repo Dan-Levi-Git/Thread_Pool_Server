@@ -29,7 +29,9 @@ int main(int argc , char *argv[])
          printf("error plaes provied legal host\n");
      }
 
+
     portnum = atoi(argv[2]);
+    
     sockfd = socket(AF_INET, SOCK_STREAM , 0);
     if( sockfd < 0)
     {
@@ -43,6 +45,7 @@ int main(int argc , char *argv[])
         printf("ERROR: server name... \n");
 
     }
+    
     bzero((char*)&serveraddr , sizeof(serveraddr));
     serveraddr.sin_family = AF_INET;
     serveraddr.sin_port = htons(portnum);
@@ -59,8 +62,9 @@ int main(int argc , char *argv[])
     int stat;
     fd = fopen("test1_recive.txt", "a");
     fwrite(buffer, sizeof(char), strlen(buffer), fd);
-    printf("receive file the content is: %s \n",buffer);
+    printf("receive file.the content is: %s \n",buffer);
     fclose(fd);
+    
     while(1)
     {
         bzero(buffer ,256);
@@ -72,6 +76,7 @@ int main(int argc , char *argv[])
             break;
         }
     }
+    
     close(sockfd);
     return 0;
 }
