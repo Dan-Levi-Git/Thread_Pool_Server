@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "queue.h"
 
+/* Alloceted a new queue. */
 queue_node* init_queue ()
 {
     queue_node* queue_pool = (queue_node*)malloc(sizeof(queue_node));
@@ -10,6 +11,7 @@ queue_node* init_queue ()
     return queue_pool;
 }
 
+/* Enqueue a new task for the list. */
 void enqueu(int*clint_sock, queue_node* queue_pool)
 {
     node* new_node = malloc(sizeof(node));
@@ -27,6 +29,7 @@ void enqueu(int*clint_sock, queue_node* queue_pool)
     queue_pool->tail = new_node;
 }
 
+/* Dequeue a new task for the list. */
 int* Dequeue (queue_node* queue_pool)
 {
     if(queue_pool->head == NULL)
