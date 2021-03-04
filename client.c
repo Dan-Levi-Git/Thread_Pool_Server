@@ -47,8 +47,8 @@ int main(int argc , char *argv[])
     /* Geting thr port num from shell. */
     portnum = atoi(argv[2]);
 
-    check(sockfd = socket(AF_INET, SOCK_STREAM , 0),"Failed creaet socket");
-    
+    check(sockfd = socket(AF_INET, SOCK_STREAM, 0), "Failed create socket");
+
     /* Gating the host name by shell. */
     server = gethostbyname(argv[1]);
 
@@ -67,10 +67,11 @@ int main(int argc , char *argv[])
 
     check(connect(sockfd, (struct sockaddr *)&serveraddr, sizeof(serveraddr)), "Failed connecting to sockt \n");
 
+
     /* Read from file creaeted it  on the client machine ,and print is content. */
-    bzero(buffer, 256);
+    bzero(buffer, sizeof(buffer));
     FILE *fd;
-    read(sockfd,buffer,256);
+    read(sockfd,buffer,sizeof(buffer));
     int stat;
     fd = fopen("test1_recive.txt", "a");
     fwrite(buffer, sizeof(char), strlen(buffer), fd);
@@ -80,12 +81,16 @@ int main(int argc , char *argv[])
 
      while (1)
     {
-        bzero(buffer ,256);
+        bzero(buffer ,sizeof(buffer));
         fgets(buffer,sizeof(buffer),stdin);
         write(sockfd, buffer,strlen(buffer));
-        stat = strncmp("Bey", buffer, 3);
+        stat = strncmp("Bye", buffer, strlen("Bye"));
         if (stat == 0)
         {
             break;
         }
     }
+
+    close(sockfd);
+    return 0;
+}
