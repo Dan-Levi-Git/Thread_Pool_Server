@@ -17,10 +17,10 @@
 #include <sys/ioctl.h>
 #include "queue.h"
 
-#define SERVER_PORT 9898
-#define SERVER_BACKLOG 100
-#define THREAD_POOL_SIZE 4
-#define SOCKTERROR -1
+#define SERVER_PORT     (9898U)
+#define SERVER_BACKLOG   (100U)
+#define THREAD_POOL_SIZE (4U)
+#define SOCKTERROR       (-1)
 
 
 
@@ -28,7 +28,6 @@ pthread_t thread_pool[THREAD_POOL_SIZE];
 pthread_mutex_t threadlock = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t thread_cond = PTHREAD_COND_INITIALIZER;
 queue_node* queue_pool;
-
 typedef struct sockaddr_in SA_IN;
 typedef struct sockaddr SA;
 
@@ -57,17 +56,18 @@ void *handle_connction (int *p_client)
     FILE *fp;
     fp = fopen("test1.txt", "r");
     fread(buffer, sizeof(char), sizeof(buffer), fp);
-    write(client_psocket, buffer, 256);
+    write(client_psocket, buffer, sizeof(buffer));
     printf("File send successfuly \n");
     fclose(fp);
     while(1)
     {
-        bzero(buffer ,256);
-        read(client_psocket,buffer,256);
-        printf("client: %s \n",buffer);
-        stat = strncmp("Bey", buffer, 3);
+        bzero(buffer ,sizeof(buffer));
+        read(client_psocket,buffer,sizeof(buffer));
+        printf("Client: %s \n",buffer);
+        stat = strncmp("Bye", buffer, strlen("Bye"));
         if(stat == 0)
         {
+            printf("Connection close \n");
             break;
         }
     }
@@ -83,8 +83,8 @@ void *thread_function(void *arg)
     {
         int* pclint;
         pthread_mutex_lock(&threadlock);
-
-        if ((pclint = Dequeue(queue_pool)) == NULL)
+        pclint = Dequeue(queue_pool);
+        if (pclint == NULL)
         {
             pthread_cond_wait(&thread_cond, &threadlock);
             pclint = Dequeue(queue_pool);
@@ -102,7 +102,7 @@ void *thread_function(void *arg)
 
 int main(int argc, char *argv[])
 {
-    int clinet_socket , server_socket;
+    int client_socket , server_socket;
     socklen_t addr_size;
     SA_IN server_addr , clinet_addr;
     int i;
@@ -111,13 +111,13 @@ int main(int argc, char *argv[])
     queue_pool = init_queue();
 
     /* Creaet a set of threads for that serve as the active threads of the rhread pool. */
-    for(i = 1; i < THREAD_POOL_SIZE; i++)
+    for(i = 0; i < THREAD_POOL_SIZE; i++)
     {
-        pthread_create(&thread_pool[i], NULL, &thread_function, NULL);
+        check(pthread_create(&thread_pool[i], NULL, &thread_function, NULL), "Failed to create thread)");
     }
 
     /* Creaet a socket of TCP. */
-    check(server_socket = socket(AF_INET, SOCK_STREAM, 0), "Failed to creaet a socket \n");
+    check(server_socket = socket(AF_INET, SOCK_STREAM, 0), "Failed to create a socket \n");
 
     /* Initialize the address struct. */
     server_addr.sin_family = AF_INET;
@@ -132,16 +132,16 @@ int main(int argc, char *argv[])
     {
         printf("waiting for connection...\n");
         addr_size = sizeof(SA_IN);
-        check(clinet_socket = accept(server_socket, (SA *)&clinet_addr, &addr_size),"Failed to acccept connection");
+        check(client_socket = accept(server_socket, (SA *)&clinet_addr, &addr_size),"Failed to acccept connection");
         printf("connected successfuly! \n");
 
         /* Enter task (thread) to the pool. */
         int* psockt = (int*)malloc(sizeof(int));
-        *psockt = clinet_socket;
+        *psockt = client_socket;
         pthread_mutex_lock(&threadlock);
         enqueu(psockt , queue_pool);
-        pthread_cond_signal(&thread_cond);
         pthread_mutex_unlock(&threadlock);
+        pthread_cond_signal(&thread_cond);
 
     }
 
